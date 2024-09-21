@@ -18,6 +18,41 @@ const App = () => {
     const [forecastData, setForecastData] = useState([]);
     const [unit, setUnit] = useState('metric');
     const [error, setError] = useState(null);
+    const [temperature, setTemperature] = useState(null);
+
+    useEffect(() => {
+        const fetchWeatherData = async () => {
+            try {
+                const API_KEY = process.env.REACT_APP_OPENWEATHERMAP_API_KEY;
+
+                if (!API_KEY) {
+                    console.error('API key is missing! Please check your .env file.');
+                    return;
+                }
+
+                const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=${unit}&appid=${API_KEY}`;
+                
+                console.log('Fetching from URL:', url);
+
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (response.ok) {
+                    console.log('Weather Data:', data); 
+                    setTemperature(data.main.temp);
+                } else {
+                    console.error('Error fetching weather data:', data.message);
+                    setTemperature(null);
+                }
+            } catch (error) {
+                console.error('Error fetching weather data:', error);
+                setTemperature(null);
+            }
+        };
+
+        fetchWeatherData();
+    }, [city, unit])
+
 
     useEffect(() => {
         const cachedCity = localStorage.getItem('city');
@@ -101,18 +136,36 @@ const App = () => {
                 <TemperatureToggle unit={unit} onToggle={handleToggle} />
             </header>
 
+            {/* <h1>Weather in {city}</h1>
+            {temperature !== null ? (
+                <TemperatureDisplay temperature={temperature} unit={unit} />
+            ) : (
+                <p>Loading...</p>
+            )} */}
+
+            {/* Buttons to toggle between Celsius and Fahrenheit */}
+            {/* <div className="unit-toggle">
+                <button onClick={() => setUnit('metric')} disabled={unit === 'metric'}>
+                    °C
+                </button>
+                <button onClick={() => setUnit('imperial')} disabled={unit === 'imperial'}>
+                    °F
+                </button>
+            </div> */}
+
+
             {error && <div className="error-message">{error}</div>}
 
-            {weatherData && (
+            {weatherData && temperature !== null && (
                 <div className="current-weather">
                     <CityDisplay city={weatherData.name} />
                     <WeatherIcon icon={weatherData.weather[0].icon} />
-                    <TemperatureDisplay temperature={weatherData.main.temp} unit={unit} />
+                    <TemperatureDisplay temperature={temperature} unit={unit} />
                     <WeatherCondition condition={weatherData.weather[0].description} />
                 </div>
             )}
 
-            {forecastData.length > 0 && (
+            {forecastData.length > 0 && temperature !== null && (
                 <div className="forecast-section">
                     <h3>5-Day Forecast</h3>
                     <div className="forecast-container">
@@ -123,16 +176,17 @@ const App = () => {
                                 high={dayForecast.high}
                                 low={dayForecast.low}
                                 icon={dayForecast.icon}
+                                temperature={dayForecast.temperature} 
+                                unit={unit}
                             />
                         ))}
                     </div>
                 </div>
             )}
-
-            <footer>
-                <p>Powered by OpenWeatherMap</p>
-            </footer>
+            
         </div>
+
+        
     );
 };
 

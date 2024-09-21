@@ -42,22 +42,36 @@ export const getCurrentWeather = async (cityName, lat, lon, cnt, unit = 'metric'
  * @param {string} unit
  * @returns {Promise<Array>}
  */
-export const getForecast = async (cityName, lat, lon, cnt, unit = 'metric') => {
-    try {
-        const response = await axios.get(`${BASE_URL}/forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}`, {
-            params: {
-                q: cityName,
-                lat: lat,
-                lon: lon,
-                cnt: cnt,
-                appid: API_KEY,
-                units: unit
-            }
-        });
-        const processedData = processForecastData(response.data.list);
-        return processedData;
-    } catch (error) {
-        throw error;
+// export const getForecast = async (cityName, lat, lon, cnt, unit = 'metric') => {
+//     try {
+//         const response = await axios.get(`${BASE_URL}/forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}`, {
+//             params: {
+//                 q: cityName,
+//                 lat: lat,
+//                 lon: lon,
+//                 cnt: cnt,
+//                 appid: API_KEY,
+//                 units: unit
+//             }
+//         });
+//         const processedData = processForecastData(response.data.list);
+//         return processedData;
+//     } catch (error) {
+//         throw error;
+//     }
+// };
+
+export const getForecast = async (cityName, unit) => {
+    const API_KEY = process.env.REACT_APP_OPENWEATHERMAP_API_KEY;
+    const url = `https://api.openweathermap.org/data/2.5/forecast?q=${cityName}&units=${unit}&appid=${API_KEY}`;
+
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (response.ok) {
+        return processForecastData(data.list);
+    } else {
+        throw new Error('Error fetching forecast data');
     }
 };
 
@@ -77,7 +91,8 @@ const processForecastData = (list) => {
             daily[day] = {
                 high: item.main.temp_max,
                 low: item.main.temp_min,
-                icon: item.weather[0].icon
+                icon: item.weather[0].icon,
+                temperature: item.main.temp
             };
         } else {
             daily[day].high = Math.max(daily[day].high, item.main.temp_max);
@@ -92,7 +107,8 @@ const processForecastData = (list) => {
         day,
         high: daily[day].high,
         low: daily[day].low,
-        icon: daily[day].icon
+        icon: daily[day].icon,
+        temperature: daily[day].temperature
     }));
 
     return forecastArray;
