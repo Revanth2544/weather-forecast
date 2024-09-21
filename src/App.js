@@ -31,14 +31,14 @@ const App = () => {
                 }
 
                 const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=${unit}&appid=${API_KEY}`;
-                
+
                 console.log('Fetching from URL:', url);
 
                 const response = await fetch(url);
                 const data = await response.json();
 
                 if (response.ok) {
-                    console.log('Weather Data:', data); 
+                    console.log('Weather Data:', data);
                     setTemperature(data.main.temp);
                 } else {
                     console.error('Error fetching weather data:', data.message);
@@ -107,7 +107,7 @@ const App = () => {
                 }
             } else if (err.response && err.response.status === 404) {
                 setError('City not found. Please try another city.');
-            } 
+            }
             // setWeatherData(null);
             // setForecastData([]);
         }
@@ -130,29 +130,10 @@ const App = () => {
 
     return (
         <div className="app-container">
-            <header>
-                <h1>Weather Forecast</h1>
+            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", flexDirection: "column", }}>
+                <center style={{ fontSize: "40px", fontWeight: "bolder" }}>Weather Forecast</center><br />
                 <SearchBar onSearch={handleSearch} />
-                <TemperatureToggle unit={unit} onToggle={handleToggle} />
-            </header>
-
-            {/* <h1>Weather in {city}</h1>
-            {temperature !== null ? (
-                <TemperatureDisplay temperature={temperature} unit={unit} />
-            ) : (
-                <p>Loading...</p>
-            )} */}
-
-            {/* Buttons to toggle between Celsius and Fahrenheit */}
-            {/* <div className="unit-toggle">
-                <button onClick={() => setUnit('metric')} disabled={unit === 'metric'}>
-                    °C
-                </button>
-                <button onClick={() => setUnit('imperial')} disabled={unit === 'imperial'}>
-                    °F
-                </button>
-            </div> */}
-
+            </div>
 
             {error && <div className="error-message">{error}</div>}
 
@@ -164,29 +145,32 @@ const App = () => {
                     <WeatherCondition condition={weatherData.weather[0].description} />
                 </div>
             )}
+            <div style={{ marginLeft: "48%" }}>
+                <TemperatureToggle unit={unit} onToggle={handleToggle} />
+            </div>
 
             {forecastData.length > 0 && temperature !== null && (
                 <div className="forecast-section">
                     <h3>5-Day Forecast</h3>
                     <div className="forecast-container">
                         {forecastData.map((dayForecast, index) => (
-                            <ForecastCard 
+                            <ForecastCard
                                 key={index}
                                 day={dayForecast.day}
                                 high={dayForecast.high}
                                 low={dayForecast.low}
                                 icon={dayForecast.icon}
-                                temperature={dayForecast.temperature} 
+                                temperature={dayForecast.temperature}
                                 unit={unit}
                             />
                         ))}
                     </div>
                 </div>
             )}
-            
+
         </div>
 
-        
+
     );
 };
 
